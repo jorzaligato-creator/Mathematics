@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Quadratic Transformations Lesson & Quiz</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f6f8fa;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 700px;
+      margin: 40px auto;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      padding: 32px;
+    }
+    h1, h2, h3 {
+      text-align: center;
+      color: #314e6e;
+      margin-bottom: 14px;
+    }
+    .lesson-section {
+      margin-bottom: 36px;
+      font-size: 1.09rem;
+    }
+    .lesson-section ul, .lesson-section ol {
+      margin-left: 24px;
+    }
+    .input-group {
+      margin-bottom: 32px;
+      text-align: center;
+    }
+    label[for="username"] {
+      font-size: 1.1em;
+      margin-right: 12px;
+      color: #314e6e;
+    }
+    input[type="text"] {
+      font-size: 1em;
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #bbb;
+      width: 220px;
+    }
+    .question {
+      margin-bottom: 24px;
+      padding: 12px;
+      background: #f0f4f8;
+      border-radius: 6px;
+      font-size: 1.09rem;
+    }
+    .answers input[type="radio"] {
+      margin-right: 8px;
+    }
+    .answers label {
+      display: block;
+      margin-bottom: 8px;
+      cursor: pointer;
+    }
+    button {
+      background: #0077cc;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 10px 24px;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 16px;
+      margin-right: 8px;
+    }
+    .score-report {
+      margin-top: 24px;
+      font-size: 1.1em;
+      background: #e3f7e3;
+      border-radius: 8px;
+      padding: 20px;
+      color: #314e6e;
+      text-align: center;
+    }
+    .score-list {
+      margin-top: 24px;
+      background: #f7e3e3;
+      border-radius: 8px;
+      padding: 20px;
+      color: #314e6e;
+      font-size: 1.05em;
+      text-align: left;
+    }
+    .offline-warning {
+      color: #d32f2f;
+      text-align: center;
+      margin-bottom: 20px;
+      font-weight: bold;
+      display: none;
+    }
+    .online-warning {
+      color: #d32f2f;
+      text-align: center;
+      margin-bottom: 20px;
+      font-weight: bold;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Quadratic Transformations</h1>
+    <div id="offlineWarning" class="offline-warning">You are offline. The quiz is now available.</div>
+    <div id="onlineWarning" class="online-warning">You are online. The quiz has been reset. Please wait until you are offline to start or continue the quiz.</div>
+    <div id="lessonSection" class="lesson-section">
+      <!-- Lesson will be rendered here -->
+    </div>
+    <div id="entrySection" style="display:none;">
+      <h2>Enter Your Name</h2>
+      <div class="input-group">
+        <label for="username">Name:</label>
+        <input type="text" id="username" autocomplete="off" required>
+      </div>
+      <button onclick="startQuiz()">Start Quiz</button>
+    </div>
+    <form id="quizForm" style="display:none;">
+      <!-- Quiz will be rendered here -->
+    </form>
+    <div id="quizResult"></div>
+    <div style="text-align:center; margin-top:32px;">
+      <button onclick="showScoreList()" id="scoreListBtn" style="display:none;">View Score List</button>
+    </div>
+    <div id="scoreList" class="score-list" style="display:none;"></div>
+  </div>
+
+  <script>
+    // --- Lesson Section ---
+    function renderLesson() {
+      const lessonSection = document.getElementById('lessonSection');
+      lessonSection.innerHTML = `
+        <h2>Lesson: Transformations of Quadratic Functions</h2>
+        <p>
+          <strong>Objective:</strong> Analyze the effects of changing the values of <em>a</em>, <em>h</em>, and <em>k</em> in the equation <span style="font-family: 'Consolas', monospace; color: #314e6e;">y = a(x – h)² + k</span> on its graph.
+        </p>
+        <ol>
+          <li><strong>Explore:</strong> Visualize and investigate the quadratic function using graphing tools, noticing what happens when you change <em>a</em>, <em>h</em>, or <em>k</em>.</li>
+          <li><strong>Explain:</strong>
+            <ul>
+              <li><strong>a:</strong> Controls the <em>width</em> and <em>direction</em> of the parabola.<br>
+                - When <em>a</em> is positive, the parabola opens upward.<br>
+                - When <em>a</em> is negative, the parabola opens downward.<br>
+                - Larger |a| values make the parabola <em>narrower</em>; smaller |a| values make it <em>wider</em>.
+              </li>
+              <li><strong>h:</strong> Controls the <em>horizontal shift</em>.<br>
+                - The vertex of the parabola moves left or right according to <em>h</em>.<br>
+                - Increasing <em>h</em> moves the graph right; decreasing <em>h</em> moves it left.
+              </li>
+              <li><strong>k:</strong> Controls the <em>vertical shift</em>.<br>
+                - The vertex moves up (if <em>k</em> increases) or down (if <em>k</em> decreases).
+              </li>
+            </ul>
+          </li>
+          <li><strong>Example:</strong> Compare the graphs of <span style="font-family: 'Consolas', monospace;">y = (x-2)² + 3</span>, <span style="font-family: 'Consolas', monospace;">y = -2(x-2)² + 3</span>, and <span style="font-family: 'Consolas', monospace;">y = (x-5)² - 4</span>.<br>
+            - What happens when you change <em>a</em>?<br>
+            - How does the vertex move when you change <em>h</em> or <em>k</em>?
+          </li>
+          <li><strong>Apply:</strong> Try changing values in graphing software or sketch graphs by hand to see the effects.</li>
+        </ol>
+        <h3>Summary Table</h3>
+        <table style="width:100%; margin:auto; border-collapse: collapse;">
+          <tr style="background:#e0e7ef;">
+            <th style="padding:6px;border:1px solid #bbb;">Parameter</th>
+            <th style="padding:6px;border:1px solid #bbb;">Effect</th>
+            <th style="padding:6px;border:1px solid #bbb;">Example</th>
+          </tr>
+          <tr>
+            <td style="padding:6px;border:1px solid #bbb;"><b>a</b></td>
+            <td style="padding:6px;border:1px solid #bbb;">Width & direction</td>
+            <td style="padding:6px;border:1px solid #bbb;">y = 3(x-2)² (narrow, up); y = -0.5(x-2)² (wide, down)</td>
+          </tr>
+          <tr>
+            <td style="padding:6px;border:1px solid #bbb;"><b>h</b></td>
+            <td style="padding:6px;border:1px solid #bbb;">Horizontal shift</td>
+            <td style="padding:6px;border:1px solid #bbb;">y = (x-5)² (vertex at x=5)</td>
+          </tr>
+          <tr>
+            <td style="padding:6px;border:1px solid #bbb;"><b>k</b></td>
+            <td style="padding:6px;border:1px solid #bbb;">Vertical shift</td>
+            <td style="padding:6px;border:1px solid #bbb;">y = (x-2)² + 4 (vertex at y=4)</td>
+          </tr>
+        </table>
+        <br>
+        <h3>When you are ready and offline, enter your name and begin the quiz!</h3>
+      `;
+    }
+
+    // --- Quiz Section ---
+    const quizData = [
+      { q: "A student changes the value of a in the equation y = a(x – 2)² + 3 from 1 to -2. What happens to the graph of the quadratic function?",
+        options: [
+          "The parabola opens upwards and becomes wider.",
+          "The parabola opens downwards and becomes narrower.",
+          "The vertex shifts to the right.",
+          "The graph moves upward."
+        ], answer: 1 },
+      { q: "Given the equation y = 2(x – h)² + 5, the vertex of the parabola moves as h changes. Describe how the vertex changes if h is increased from 0 to 3.",
+        options: [
+          "The vertex moves 3 units up.",
+          "The vertex moves 3 units right.",
+          "The vertex moves 3 units left.",
+          "The vertex moves 3 units down."
+        ], answer: 1 },
+      { q: "For y = a(x – h)² + k, what effect does increasing k from 0 to 4 have on the graph?",
+        options: [
+          "It shifts the graph 4 units up.",
+          "It shifts the graph 4 units right.",
+          "It makes the parabola wider.",
+          "It changes the direction of opening."
+        ], answer: 0 },
+      { q: "The graph of y = a(x – h)² + k opens upwards when a > 0 and downwards when a < 0. Give an example and explain why this is so.",
+        options: [
+          "If a = 2, the parabola opens downwards.",
+          "If a = -1, the parabola opens upwards.",
+          "If a = 3, the parabola opens upwards.",
+          "If a = -2, the parabola opens upwards."
+        ], answer: 2 },
+      { q: "If the equation changes from y = (x – 1)² + 2 to y = (x – 1)² – 3, how does the graph shift?",
+        options: [
+          "It shifts 5 units up.",
+          "It shifts 5 units down.",
+          "It shifts 2 units left.",
+          "It does not move."
+        ], answer: 1 },
+      { q: "A quadratic function y = –3(x – 2)² + 1 has a vertex at (2, 1). What will be the new vertex if h is changed to 5?",
+        options: [
+          "(5, 1)",
+          "(2, 5)",
+          "(1, 5)",
+          "(5, -3)"
+        ], answer: 0 },
+      { q: "Suppose y = 0.5(x – h)² + k. Describe the effect of decreasing a from 0.5 to 0.1 on the graph’s shape.",
+        options: [
+          "The parabola becomes narrower.",
+          "The parabola becomes wider.",
+          "The vertex moves left.",
+          "The graph shifts upward."
+        ], answer: 1 },
+      { q: "Given y = a(x – h)² + k, which parameter affects the direction the parabola opens, and why?",
+        options: [
+          "h, because it moves the graph left or right.",
+          "a, because positive a opens up and negative a opens down.",
+          "k, because it moves the graph up or down.",
+          "None of the above."
+        ], answer: 1 },
+      { q: "The graph of y = 2(x – 3)² + 4 is shifted horizontally. What is the new equation if the graph is shifted 2 units to the left?",
+        options: [
+          "y = 2(x – 5)² + 4",
+          "y = 2(x – 1)² + 4",
+          "y = 2(x + 2)² + 4",
+          "y = 2(x – 3)² + 2"
+        ], answer: 1 },
+      { q: "If a student changes the equation from y = (x – 4)² to y = 2(x – 4)², what happens to the parabola’s width?",
+        options: [
+          "It becomes wider.",
+          "It becomes narrower.",
+          "It moves right.",
+          "It moves down."
+        ], answer: 1 },
+      { q: "A teacher writes y = –(x – 2)² + k. If k increases from 0 to 5, what happens to the vertex?",
+        options: [
+          "It moves 5 units right.",
+          "It moves 5 units up.",
+          "It moves 5 units left.",
+          "It moves 5 units down."
+        ], answer: 1 },
+      { q: "What is the effect on the graph of y = a(x – h)² + k if h is decreased by 3? Explain using an example.",
+        options: [
+          "The graph moves 3 units left.",
+          "The graph moves 3 units up.",
+          "The graph moves 3 units down.",
+          "The graph moves 3 units right."
+        ], answer: 0 },
+      { q: "The quadratic function y = a(x – h)² + k has its vertex at (h, k). How does changing k affect the graph’s position?",
+        options: [
+          "The vertex moves horizontally.",
+          "The vertex moves vertically.",
+          "The parabola becomes wider.",
+          "The direction changes."
+        ], answer: 1 },
+      { q: "Compare the graphs of y = (x – 2)² and y = (x – 2)² – 5. How are they different?",
+        options: [
+          "The second graph is shifted 5 units up.",
+          "The second graph is shifted 5 units down.",
+          "The second graph is narrower.",
+          "The second graph is wider."
+        ], answer: 1 },
+      { q: "If y = a(x – h)² + k and a = 1, h = 0, k = 0, what is the effect on the graph if a is changed to 5?",
+        options: [
+          "The parabola becomes wider.",
+          "The parabola becomes narrower.",
+          "The vertex shifts right.",
+          "The graph moves up."
+        ], answer: 1 },
+      { q: "Suppose y = –2(x – h)² – 4. Describe how the graph will look if h is increased from 2 to 6.",
+        options: [
+          "The vertex moves 4 units up.",
+          "The vertex moves 4 units right.",
+          "The vertex moves 4 units left.",
+          "The vertex moves 4 units down."
+        ], answer: 1 },
+      { q: "Why does changing h in y = a(x – h)² + k result in a horizontal shift? Provide a brief explanation.",
+        options: [
+          "Because h changes the y-value.",
+          "Because h moves the vertex left or right.",
+          "Because h changes the direction of opening.",
+          "Because h makes the parabola wider."
+        ], answer: 1 },
+      { q: "A student sketches y = 3(x – 1)² + 2 and y = 3(x – 1)² – 4. What difference will appear in their graphs?",
+        options: [
+          "The second graph is shifted 6 units down.",
+          "The second graph is shifted 6 units up.",
+          "The second graph is shifted 6 units left.",
+          "The second graph is shifted 6 units right."
+        ], answer: 0 },
+      { q: "What is the effect of making a negative in y = a(x – h)² + k? Explain using a sketch or words.",
+        options: [
+          "The parabola opens upwards.",
+          "The parabola opens downwards.",
+          "The parabola becomes wider.",
+          "The vertex moves left."
+        ], answer: 1 },
+      { q: "For the equation y = a(x – h)² + k, summarize what each parameter (a, h, k) does to the graph.",
+        options: [
+          "a changes width and direction, h shifts horizontally, k shifts vertically.",
+          "a shifts horizontally, h changes width, k changes direction.",
+          "a shifts vertically, h shifts horizontally, k changes width.",
+          "a changes direction, h shifts vertically, k shifts horizontally."
+        ], answer: 0 }
+    ];
+
+    let currQuestion = 0;
+    let userAnswers = [];
+    let userName = '';
+    let quizStarted = false;
+    const quizForm = document.getElementById('quizForm');
+    const quizResult = document.getElementById('quizResult');
+    const entrySection = document.getElementById('entrySection');
+    const usernameInput = document.getElementById('username');
+    const scoreListBtn = document.getElementById('scoreListBtn');
+    const scoreListDiv = document.getElementById('scoreList');
+    const offlineWarning = document.getElementById('offlineWarning');
+    const onlineWarning = document.getElementById('onlineWarning');
+    let quizAvailable = false;
+
+    // --- Online/Offline Management ---
+    function checkOnlineStatus() {
+      if (navigator.onLine) {
+        quizAvailable = false;
+        offlineWarning.style.display = "none";
+        onlineWarning.style.display = "block";
+        entrySection.style.display = "none";
+        quizForm.style.display = "none";
+        quizResult.innerHTML = "";
+        quizStarted = false;
+        currQuestion = 0;
+        userAnswers = [];
+      } else {
+        quizAvailable = true;
+        offlineWarning.style.display = "block";
+        onlineWarning.style.display = "none";
+        if (!quizStarted) entrySection.style.display = "block";
+      }
+    }
+    window.addEventListener('online', checkOnlineStatus);
+    window.addEventListener('offline', checkOnlineStatus);
+
+    // --- Score Storage ---
+    function saveScore(name, score) {
+      let scores = JSON.parse(localStorage.getItem('quadraticScores') || "[]");
+      scores.push({ name, score, date: new Date().toLocaleString() });
+      localStorage.setItem('quadraticScores', JSON.stringify(scores));
+    }
+    function getScores() {
+      return JSON.parse(localStorage.getItem('quadraticScores') || "[]");
+    }
+    function showScoreList() {
+      const scores = getScores();
+      scoreListDiv.style.display = "block";
+      scoreListBtn.style.display = "none";
+      if (!scores.length) {
+        scoreListDiv.innerHTML = "<b>No scores recorded yet.</b>";
+        return;
+      }
+      let html = `<b>Score List:</b><br><table style="width:100%;margin-top:12px;border-collapse:collapse;">
+        <tr style="background:#e0e7ef;">
+          <th style="border:1px solid #bbb;padding:6px;">Name</th>
+          <th style="border:1px solid #bbb;padding:6px;">Score</th>
+          <th style="border:1px solid #bbb;padding:6px;">Date/Time</th>
+        </tr>`;
+      for (const s of scores) {
+        html += `<tr>
+          <td style="border:1px solid #bbb;padding:6px;">${s.name}</td>
+          <td style="border:1px solid #bbb;padding:6px;text-align:center;">${s.score} / ${quizData.length}</td>
+          <td style="border:1px solid #bbb;padding:6px;">${s.date}</td>
+        </tr>`;
+      }
+      html += `</table><br><button onclick="hideScoreList()">Hide Score List</button>`;
+      scoreListDiv.innerHTML = html;
+    }
+    function hideScoreList() {
+      scoreListDiv.style.display = "none";
+      scoreListBtn.style.display = "block";
+    }
+
+    // --- Quiz Logic ---
+    function startQuiz() {
+      if (!quizAvailable) {
+        alert("Quiz is only available when offline.");
+        return;
+      }
+      userName = usernameInput.value.trim();
+      if (!userName) {
+        alert("Please enter your name to start the quiz.");
+        return;
+      }
+      entrySection.style.display = 'none';
+      quizForm.style.display = 'block';
+      quizResult.innerHTML = '';
+      currQuestion = 0;
+      userAnswers = [];
+      quizStarted = true;
+      scoreListDiv.style.display = "none";
+      showQuestion();
+    }
+
+    function showQuestion() {
+      quizForm.innerHTML = '';
+      if (currQuestion < quizData.length) {
+        const item = quizData[currQuestion];
+        const questionDiv = document.createElement('div');
+        questionDiv.className = 'question';
+        questionDiv.innerHTML = `<strong>Question ${currQuestion + 1} of ${quizData.length}:</strong><br>${item.q}<div class="answers"></div>`;
+        const answersDiv = questionDiv.querySelector('.answers');
+        item.options.forEach((opt, optIdx) => {
+          const answerId = `q${currQuestion}_opt${optIdx}`;
+          const label = document.createElement('label');
+          label.htmlFor = answerId;
+          label.innerHTML = `<input type="radio" name="q${currQuestion}" id="${answerId}" value="${optIdx}"> ${opt}`;
+          answersDiv.appendChild(label);
+        });
+        quizForm.appendChild(questionDiv);
+
+        const nextBtn = document.createElement('button');
+        nextBtn.type = 'button';
+        nextBtn.textContent = (currQuestion === quizData.length - 1) ? 'Finish Quiz' : 'Next Question';
+        nextBtn.onclick = nextQuestion;
+
+        if (currQuestion > 0) {
+          const prevBtn = document.createElement('button');
+          prevBtn.type = 'button';
+          prevBtn.textContent = 'Previous';
+          prevBtn.onclick = prevQuestion;
+          quizForm.appendChild(prevBtn);
+        }
+
+        quizForm.appendChild(nextBtn);
+
+        // Restore previous answer if available
+        if (userAnswers[currQuestion] !== undefined) {
+          const radios = document.getElementsByName('q' + currQuestion);
+          for (const radio of radios) {
+            if (Number(radio.value) === userAnswers[currQuestion]) {
+              radio.checked = true;
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    function nextQuestion() {
+      const radios = document.getElementsByName('q' + currQuestion);
+      let selected = -1;
+      for (const radio of radios) {
+        if (radio.checked) selected = Number(radio.value);
+      }
+      if (selected === -1) {
+        alert("Please select an answer before proceeding.");
+        return;
+      }
+      userAnswers[currQuestion] = selected;
+      currQuestion++;
+      if (currQuestion < quizData.length) {
+        showQuestion();
+      } else {
+        quizForm.style.display = 'none';
+        showScoreReport();
+      }
+    }
+
+    function prevQuestion() {
+      currQuestion--;
+      showQuestion();
+    }
+
+    function showScoreReport() {
+      let score = 0;
+      for (let i = 0; i < quizData.length; i++) {
+        if (userAnswers[i] === quizData[i].answer) score++;
+      }
+      quizResult.innerHTML =
+        `<div class="score-report">
+          <h2>Quiz Complete!</h2>
+          <strong>Name:</strong> ${userName}<br>
+          <strong>Your Score:</strong> ${score} / ${quizData.length}
+        </div>`;
+      saveScore(userName, score);
+      scoreListBtn.style.display = "inline-block";
+    }
+
+    // --- Initial Setup ---
+    renderLesson();
+    checkOnlineStatus();
+  </script>
+</body>
+</html>
