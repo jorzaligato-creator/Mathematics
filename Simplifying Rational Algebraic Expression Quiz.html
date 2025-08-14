@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PISA-Style Quiz: Simplifying Rational Algebraic Expressions</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            }
+        };
+    </script>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Name Entry Screen -->
+        <div id="nameEntryContainer" class="bg-white rounded-xl shadow-lg p-8 mb-6">
+            <div class="text-center">
+                <div id="onlineWarning" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6 hidden">
+                    <strong>⚠️ Online Connection Detected!</strong><br>
+                    This quiz must be taken offline to ensure academic integrity. Please disconnect from the internet and refresh the page.
+                </div>
+                <div class="max-w-md mx-auto">
+                    <label for="studentName" class="block text-lg font-medium text-gray-700 mb-3">Enter your name to begin:</label>
+                    <input type="text" id="studentName" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none text-lg" placeholder="Your full name" maxlength="50">
+                    <button id="startQuizBtn" class="w-full mt-4 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg text-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Start Quiz</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Header -->
+        <div id="quizHeader" class="text-center mb-8 hidden">
+            <div class="bg-white rounded-lg shadow-md p-4 inline-block">
+                <p class="text-gray-700">Student: <span id="displayName" class="font-semibold text-indigo-600"></span></p>
+                <p class="text-gray-700">Question <span id="currentQuestion">1</span> of 30</p>
+                <div class="w-64 bg-gray-200 rounded-full h-2 mt-2">
+                    <div id="progressBar" class="bg-indigo-600 h-2 rounded-full transition-all duration-300" style="width: 3.33%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quiz Container -->
+        <div id="quizContainer" class="bg-white rounded-xl shadow-lg p-8 mb-6 hidden">
+            <div id="questionContent"></div>
+            <div id="answerOptions" class="mt-6"></div>
+            <div class="flex justify-between mt-6">
+                <button id="prevBtn" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>Previous</button>
+                <button id="nextBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg transition-colors">Next Question</button>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div id="resultsContainer" class="bg-white rounded-xl shadow-lg p-8 hidden">
+            
+            <!-- Score Summary -->
+            <div class="text-center mb-8">
+                <div class="bg-indigo-50 rounded-lg p-6 mb-6">
+                    <h3 class="text-xl font-semibold text-indigo-800 mb-4">Student Report</h3>
+                    <p class="text-lg text-gray-700 mb-2">Name: <span id="finalStudentName" class="font-semibold text-indigo-600"></span></p>
+                    <p class="text-lg text-gray-700 mb-2">Date: <span id="quizDate" class="font-semibold"></span></p>
+                    <p class="text-lg text-gray-700">Time Taken: <span id="timeTaken" class="font-semibold"></span></p>
+                </div>
+                
+                <div class="text-6xl font-bold text-indigo-600 mb-2" id="finalScore">0/30</div>
+                <p class="text-xl text-gray-700 mb-4" id="scorePercentage">0%</p>
+                <div id="performanceMessage" class="text-lg mb-6"></div>
+            </div>
+
+            <!-- Detailed Results -->
+            <div class="mb-8">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">Performance Breakdown</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold text-green-600" id="correctCount">0</div>
+                        <div class="text-green-700">Correct</div>
+                    </div>
+                    <div class="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold text-red-600" id="incorrectCount">0</div>
+                        <div class="text-red-700">Incorrect</div>
+                    </div>
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold text-blue-600" id="accuracyRate">0%</div>
+                        <div class="text-blue-700">Accuracy</div>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <h4 class="font-semibold text-gray-800 mb-2">Grade Scale:</h4>
+                    <div class="text-sm text-gray-600">
+                        <span class="inline-block w-3 h-3 bg-green-500 rounded mr-2"></span>90-100%: Outstanding (A)<br>
+                        <span class="inline-block w-3 h-3 bg-blue-500 rounded mr-2"></span>80-89%: Good (B)<br>
+                        <span class="inline-block w-3 h-3 bg-yellow-500 rounded mr-2"></span>70-79%: Satisfactory (C)<br>
+                        <span class="inline-block w-3 h-3 bg-orange-500 rounded mr-2"></span>60-69%: Needs Improvement (D)<br>
+                        <span class="inline-block w-3 h-3 bg-red-500 rounded mr-2"></span>Below 60%: Unsatisfactory (F)
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center">
+                <button id="printReportBtn" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg text-lg transition-colors mr-4">Print Report</button>
+                <button id="restartBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg text-lg transition-colors">Take Quiz Again</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                context: "Maria is calculating the area of a rectangular garden.",
+                question: "The length is $\\frac{6x^2}{3x}$ meters and the width is $x$ meters. What is the simplified expression for the area?",
+                options: ["$2x^2$", "$2x^3$", "$\\frac{6x^3}{3x}$", "$6x^2$"],
+                correct: 0,
+                explanation: "First simplify $\\frac{6x^2}{3x} = 2x$. Then area = length × width = $2x \\times x = 2x^2$"
+            },
+            {
+                context: "A physics student is working with velocity equations.",
+                question: "Simplify the expression: $\\frac{12a^3b^2}{4ab}$",
+                options: ["$3a^2b$", "$3ab$", "$12a^2b$", "$\\frac{3a^2b^2}{b}$"],
+                correct: 0,
+                explanation: "$\\frac{12a^3b^2}{4ab} = \\frac{12}{4} \\cdot \\frac{a^3}{a} \\cdot \\frac{b^2}{b} = 3a^2b$"
+            },
+            {
+                context: "An engineer needs to simplify a formula for calculating resistance.",
+                question: "Simplify: $\\frac{x^2 - 4}{x + 2}$",
+                options: ["$x - 2$", "$x + 2$", "$x^2 - 2$", "Cannot be simplified"],
+                correct: 0,
+                explanation: "$\\frac{x^2 - 4}{x + 2} = \\frac{(x+2)(x-2)}{x+2} = x - 2$ (for $x \\neq -2$)"
+            },
+            {
+                context: "A carpenter is calculating material costs.",
+                question: "The cost per unit is $\\frac{15x^2y}{5xy^2}$ dollars. Simplify this expression.",
+                options: ["$\\frac{3x}{y}$", "$3xy$", "$\\frac{15x}{5y}$", "$\\frac{3y}{x}$"],
+                correct: 0,
+                explanation: "$\\frac{15x^2y}{5xy^2} = \\frac{15}{5} \\cdot \\frac{x^2}{x} \\cdot \\frac{y}{y^2} = 3 \\cdot x \\cdot \\frac{1}{y} = \\frac{3x}{y}$"
+            },
+            {
+                context: "A student is solving a chemistry concentration problem.",
+                question: "Simplify: $\\frac{8m^3n^2}{2m^2n^3}$",
+                options: ["$\\frac{4m}{n}$", "$4mn$", "$\\frac{4n}{m}$", "$2m^2n$"],
+                correct: 0,
+                explanation: "$\\frac{8m^3n^2}{2m^2n^3} = \\frac{8}{2} \\cdot \\frac{m^3}{m^2} \\cdot \\frac{n^2}{n^3} = 4 \\cdot m \\cdot \\frac{1}{n} = \\frac{4m}{n}$"
+            },
+            {
+                context: "An architect is working with building proportions.",
+                question: "Simplify the ratio: $\\frac{x^2 + 3x}{x}$",
+                options: ["$x + 3$", "$x^2 + 3$", "$3x$", "$x(x + 3)$"],
+                correct: 0,
+                explanation: "$\\frac{x^2 + 3x}{x} = \\frac{x(x + 3)}{x} = x + 3$ (for $x \\neq 0$)"
+            },
+            {
+                context: "A biologist is modeling population growth.",
+                question: "Simplify: $\\frac{6p^2q^3}{9pq^2}$",
+                options: ["$\\frac{2pq}{3}$", "$\\frac{2q}{3p}$", "$\\frac{2pq^2}{3}$", "$\\frac{6pq}{9}$"],
+                correct: 0,
+                explanation: "$\\frac{6p^2q^3}{9pq^2} = \\frac{6}{9} \\cdot \\frac{p^2}{p} \\cdot \\frac{q^3}{q^2} = \\frac{2}{3} \\cdot p \\cdot q = \\frac{2pq}{3}$"
+            },
+            {
+                context: "A financial analyst is working with investment returns.",
+                question: "Simplify: $\\frac{a^2 - 9}{a - 3}$",
+                options: ["$a + 3$", "$a - 3$", "$a^2 + 3$", "Cannot be simplified"],
+                correct: 0,
+                explanation: "$\\frac{a^2 - 9}{a - 3} = \\frac{(a+3)(a-3)}{a-3} = a + 3$ (for $a \\neq 3$)"
+            },
+            {
+                context: "A meteorologist is analyzing weather data.",
+                question: "Simplify: $\\frac{20x^4y^2}{5x^2y^4}$",
+                options: ["$\\frac{4x^2}{y^2}$", "$4x^2y^2$", "$\\frac{4y^2}{x^2}$", "$\\frac{20x^2}{5y^2}$"],
+                correct: 0,
+                explanation: "$\\frac{20x^4y^2}{5x^2y^4} = \\frac{20}{5} \\cdot \\frac{x^4}{x^2} \\cdot \\frac{y^2}{y^4} = 4 \\cdot x^2 \\cdot \\frac{1}{y^2} = \\frac{4x^2}{y^2}$"
+            },
+            {
+                context: "A computer programmer is optimizing an algorithm.",
+                question: "Simplify: $\\frac{3t^2 + 6t}{3t}$",
+                options: ["$t + 2$", "$3t + 6$", "$t^2 + 2t$", "$\\frac{3t(t + 2)}{3t}$"],
+                correct: 0,
+                explanation: "$\\frac{3t^2 + 6t}{3t} = \\frac{3t(t + 2)}{3t} = t + 2$ (for $t \\neq 0$)"
+            },
+            {
+                context: "An economist is modeling supply and demand.",
+                question: "Simplify: $\\frac{x^2 + 5x + 6}{x + 2}$",
+                options: ["$x + 3$", "$x + 2$", "$x^2 + 3$", "$x + 6$"],
+                correct: 0,
+                explanation: "$\\frac{x^2 + 5x + 6}{x + 2} = \\frac{(x+2)(x+3)}{x+2} = x + 3$ (for $x \\neq -2$)"
+            },
+            {
+                context: "A chemist is calculating reaction rates.",
+                question: "Simplify: $\\frac{14r^3s^2}{7r^2s^3}$",
+                options: ["$\\frac{2r}{s}$", "$2rs$", "$\\frac{2s}{r}$", "$\\frac{14r}{7s}$"],
+                correct: 0,
+                explanation: "$\\frac{14r^3s^2}{7r^2s^3} = \\frac{14}{7} \\cdot \\frac{r^3}{r^2} \\cdot \\frac{s^2}{s^3} = 2 \\cdot r \\cdot \\frac{1}{s} = \\frac{2r}{s}$"
+            },
+            {
+                context: "A surveyor is calculating land areas.",
+                question: "Simplify: $\\frac{4w^2 - 16}{w - 2}$",
+                options: ["$4(w + 2)$", "$4w - 8$", "$w + 2$", "$\\frac{4(w^2 - 4)}{w - 2}$"],
+                correct: 0,
+                explanation: "$\\frac{4w^2 - 16}{w - 2} = \\frac{4(w^2 - 4)}{w - 2} = \\frac{4(w+2)(w-2)}{w-2} = 4(w + 2)$ (for $w \\neq 2$)"
+            },
+            {
+                context: "A statistician is analyzing data trends.",
+                question: "Simplify: $\\frac{18u^5v^3}{6u^3v^5}$",
+                options: ["$\\frac{3u^2}{v^2}$", "$3u^2v^2$", "$\\frac{3v^2}{u^2}$", "$\\frac{18u^2}{6v^2}$"],
+                correct: 0,
+                explanation: "$\\frac{18u^5v^3}{6u^3v^5} = \\frac{18}{6} \\cdot \\frac{u^5}{u^3} \\cdot \\frac{v^3}{v^5} = 3 \\cdot u^2 \\cdot \\frac{1}{v^2} = \\frac{3u^2}{v^2}$"
+            },
+            {
+                context: "A mechanical engineer is designing gears.",
+                question: "Simplify: $\\frac{5k^2 + 10k}{5k}$",
+                options: ["$k + 2$", "$5k + 10$", "$k^2 + 2k$", "$\\frac{5k(k + 2)}{5k}$"],
+                correct: 0,
+                explanation: "$\\frac{5k^2 + 10k}{5k} = \\frac{5k(k + 2)}{5k} = k + 2$ (for $k \\neq 0$)"
+            },
+            {
+                context: "A pharmacist is calculating drug concentrations.",
+                question: "Simplify: $\\frac{x^2 - 1}{x + 1}$",
+                options: ["$x - 1$", "$x + 1$", "$x^2 - 1$", "Cannot be simplified"],
+                correct: 0,
+                explanation: "$\\frac{x^2 - 1}{x + 1} = \\frac{(x+1)(x-1)}{x+1} = x - 1$ (for $x \\neq -1$)"
+            },
+            {
+                context: "A civil engineer is calculating load distributions.",
+                question: "Simplify: $\\frac{24d^4e^2}{8d^2e^3}$",
+                options: ["$\\frac{3d^2}{e}$", "$3d^2e$", "$\\frac{3e}{d^2}$", "$\\frac{24d^2}{8e}$"],
+                correct: 0,
+                explanation: "$\\frac{24d^4e^2}{8d^2e^3} = \\frac{24}{8} \\cdot \\frac{d^4}{d^2} \\cdot \\frac{e^2}{e^3} = 3 \\cdot d^2 \\cdot \\frac{1}{e} = \\frac{3d^2}{e}$"
+            },
+            {
+                context: "A nutritionist is calculating caloric ratios.",
+                question: "Simplify: $\\frac{2y^2 + 8y}{2y}$",
+                options: ["$y + 4$", "$2y + 8$", "$y^2 + 4y$", "$\\frac{2y(y + 4)}{2y}$"],
+                correct: 0,
+                explanation: "$\\frac{2y^2 + 8y}{2y} = \\frac{2y(y + 4)}{2y} = y + 4$ (for $y \\neq 0$)"
+            },
+            {
+                context: "An environmental scientist is modeling pollution levels.",
+                question: "Simplify: $\\frac{x^2 + 7x + 12}{x + 3}$",
+                options: ["$x + 4$", "$x + 3$", "$x^2 + 4$", "$x + 12$"],
+                correct: 0,
+                explanation: "$\\frac{x^2 + 7x + 12}{x + 3} = \\frac{(x+3)(x+4)}{x+3} = x + 4$ (for $x \\neq -3$)"
+            },
+            {
+                context: "A quality control manager is analyzing defect rates.",
+                question: "Simplify: $\\frac{35f^3g^4}{7f^2g^2}$",
+                options: ["$5fg^2$", "$5f^2g^2$", "$\\frac{5f}{g^2}$", "$\\frac{35fg^4}{7g^2}$"],
+                correct: 0,
+                explanation: "$\\frac{35f^3g^4}{7f^2g^2} = \\frac{35}{7} \\cdot \\frac{f^3}{f^2} \\cdot \\frac{g^4}{g^2} = 5 \\cdot f \\cdot g^2 = 5fg^2$"
+            },
+            {
+                context: "A logistics coordinator is optimizing delivery routes.",
+                question: "Simplify: $\\frac{6z^2 - 24}{z - 2}$",
+                options: ["$6(z + 2)$", "$6z - 12$", "$z + 2$", "$\\frac{6(z^2 - 4)}{z - 2}$"],
+                correct: 0,
+                explanation: "$\\frac{6z^2 - 24}{z - 2} = \\frac{6(z^2 - 4)}{z - 2} = \\frac{6(z+2)(z-2)}{z-2} = 6(z + 2)$ (for $z \\neq 2$)"
+            },
+            {
+                context: "A marine biologist is studying fish populations.",
+                question: "Simplify: $\\frac{42h^6j^3}{14h^4j^5}$",
+                options: ["$\\frac{3h^2}{j^2}$", "$3h^2j^2$", "$\\frac{3j^2}{h^2}$", "$\\frac{42h^2}{14j^2}$"],
+                correct: 0,
+                explanation: "$\\frac{42h^6j^3}{14h^4j^5} = \\frac{42}{14} \\cdot \\frac{h^6}{h^4} \\cdot \\frac{j^3}{j^5} = 3 \\cdot h^2 \\cdot \\frac{1}{j^2} = \\frac{3h^2}{j^2}$"
+            },
+            {
+                context: "A sports analyst is calculating performance metrics.",
+                question: "Simplify: $\\frac{4n^2 + 12n}{4n}$",
+                options: ["$n + 3$", "$4n + 12$", "$n^2 + 3n$", "$\\frac{4n(n + 3)}{4n}$"],
+                correct: 0,
+                explanation: "$\\frac{4n^2 + 12n}{4n} = \\frac{4n(n + 3)}{4n} = n + 3$ (for $n \\neq 0$)"
+            },
+            {
+                context: "A renewable energy engineer is calculating efficiency.",
+                question: "Simplify: $\\frac{b^2 - 25}{b - 5}$",
+                options: ["$b + 5$", "$b - 5$", "$b^2 + 5$", "Cannot be simplified"],
+                correct: 0,
+                explanation: "$\\frac{b^2 - 25}{b - 5} = \\frac{(b+5)(b-5)}{b-5} = b + 5$ (for $b \\neq 5$)"
+            },
+            {
+                context: "A telecommunications engineer is analyzing signal strength.",
+                question: "Simplify: $\\frac{30c^5d^3}{10c^3d^4}$",
+                options: ["$\\frac{3c^2}{d}$", "$3c^2d$", "$\\frac{3d}{c^2}$", "$\\frac{30c^2}{10d}$"],
+                correct: 0,
+                explanation: "$\\frac{30c^5d^3}{10c^3d^4} = \\frac{30}{10} \\cdot \\frac{c^5}{c^3} \\cdot \\frac{d^3}{d^4} = 3 \\cdot c^2 \\cdot \\frac{1}{d} = \\frac{3c^2}{d}$"
+            },
+            {
+                context: "A food scientist is calculating nutritional ratios.",
+                question: "Simplify: $\\frac{7q^2 + 21q}{7q}$",
+                options: ["$q + 3$", "$7q + 21$", "$q^2 + 3q$", "$\\frac{7q(q + 3)}{7q}$"],
+                correct: 0,
+                explanation: "$\\frac{7q^2 + 21q}{7q} = \\frac{7q(q + 3)}{7q} = q + 3$ (for $q \\neq 0$)"
+            },
+            {
+                context: "A geologist is analyzing rock formations.",
+                question: "Simplify: $\\frac{x^2 + 9x + 20}{x + 4}$",
+                options: ["$x + 5$", "$x + 4$", "$x^2 + 5$", "$x + 20$"],
+                correct: 0,
+                explanation: "$\\frac{x^2 + 9x + 20}{x + 4} = \\frac{(x+4)(x+5)}{x+4} = x + 5$ (for $x \\neq -4$)"
+            },
+            {
+                context: "A manufacturing engineer is optimizing production.",
+                question: "Simplify: $\\frac{48l^4m^2}{16l^2m^3}$",
+                options: ["$\\frac{3l^2}{m}$", "$3l^2m$", "$\\frac{3m}{l^2}$", "$\\frac{48l^2}{16m}$"],
+                correct: 0,
+                explanation: "$\\frac{48l^4m^2}{16l^2m^3} = \\frac{48}{16} \\cdot \\frac{l^4}{l^2} \\cdot \\frac{m^2}{m^3} = 3 \\cdot l^2 \\cdot \\frac{1}{m} = \\frac{3l^2}{m}$"
+            },
+            {
+                context: "A urban planner is calculating population density.",
+                question: "Simplify: $\\frac{3s^2 + 15s}{3s}$",
+                options: ["$s + 5$", "$3s + 15$", "$s^2 + 5s$", "$\\frac{3s(s + 5)}{3s}$"],
+                correct: 0,
+                explanation: "$\\frac{3s^2 + 15s}{3s} = \\frac{3s(s + 5)}{3s} = s + 5$ (for $s \\neq 0$)"
+            },
+            {
+                context: "A aerospace engineer is calculating thrust ratios.",
+                question: "Simplify: $\\frac{v^2 - 36}{v - 6}$",
+                options: ["$v + 6$", "$v - 6$", "$v^2 + 6$", "Cannot be simplified"],
+                correct: 0,
+                explanation: "$\\frac{v^2 - 36}{v - 6} = \\frac{(v+6)(v-6)}{v-6} = v + 6$ (for $v \\neq 6$)"
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let selectedAnswer = null;
+        let studentName = '';
+        let startTime = null;
+        let endTime = null;
+        let shuffledQuestions = [];
+        let isOnline = false;
+
+        // Shuffle array function
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        // Check online status
+        function checkOnlineStatus() {
+            isOnline = navigator.onLine;
+            const warning = document.getElementById('onlineWarning');
+            const startBtn = document.getElementById('startQuizBtn');
+            
+            if (isOnline) {
+                warning.classList.remove('hidden');
+                startBtn.disabled = true;
+                startBtn.textContent = 'Quiz Locked - Go Offline';
+                return true;
+            } else {
+                warning.classList.add('hidden');
+                startBtn.disabled = false;
+                startBtn.textContent = 'Start Quiz';
+                return false;
+            }
+        }
+
+        // Monitor online status during quiz
+        function monitorConnection() {
+            if (navigator.onLine && (document.getElementById('quizContainer').classList.contains('hidden') === false)) {
+                alert('Internet connection detected! Quiz will be terminated for academic integrity.');
+                endQuizDueToConnection();
+            }
+        }
+
+        function endQuizDueToConnection() {
+            document.getElementById('quizContainer').classList.add('hidden');
+            document.getElementById('quizHeader').classList.add('hidden');
+            
+            const container = document.querySelector('.container');
+            container.innerHTML = `
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded text-center">
+                    <h2 class="text-2xl font-bold mb-4">Quiz Terminated</h2>
+                    <p class="text-lg mb-4">The quiz has been terminated due to internet connection detection.</p>
+                    <p>Please ensure you are offline before starting the quiz.</p>
+                    <button onclick="location.reload()" class="mt-4 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg">Restart</button>
+                </div>
+            `;
+        }
+
+        function startQuiz() {
+            const nameInput = document.getElementById('studentName');
+            const name = nameInput.value.trim();
+            
+            if (!name) {
+                alert('Please enter your name to start the quiz.');
+                return;
+            }
+            
+            if (checkOnlineStatus()) {
+                return;
+            }
+            
+            studentName = name;
+            startTime = new Date();
+            
+            // Shuffle questions and their options
+            shuffledQuestions = shuffleArray(questions).map(question => ({
+                ...question,
+                options: shuffleArray(question.options.map((option, index) => ({
+                    text: option,
+                    originalIndex: index
+                }))),
+                originalCorrect: question.correct
+            }));
+            
+            // Update correct answer index after shuffling
+            shuffledQuestions.forEach(question => {
+                question.correct = question.options.findIndex(option => 
+                    option.originalIndex === question.originalCorrect
+                );
+            });
+            
+            // Reset quiz state
+            currentQuestionIndex = 0;
+            score = 0;
+            selectedAnswer = null;
+            
+            // Show quiz interface
+            document.getElementById('nameEntryContainer').classList.add('hidden');
+            document.getElementById('quizHeader').classList.remove('hidden');
+            document.getElementById('quizContainer').classList.remove('hidden');
+            document.getElementById('displayName').textContent = studentName;
+            
+            displayQuestion();
+            
+            // Start monitoring connection
+            setInterval(monitorConnection, 2000);
+        }
+
+        function displayQuestion() {
+            const question = shuffledQuestions[currentQuestionIndex];
+            const questionContent = document.getElementById('questionContent');
+            const answerOptions = document.getElementById('answerOptions');
+            
+            // Update progress
+            document.getElementById('currentQuestion').textContent = currentQuestionIndex + 1;
+            document.getElementById('progressBar').style.width = `${((currentQuestionIndex + 1) / 30) * 100}%`;
+            
+            // Display question
+            questionContent.innerHTML = `
+                <div class="mb-4 p-4 bg-blue-50 rounded-lg border-l-4 border-blue-400">
+                    <p class="text-sm text-blue-800 font-medium mb-2">Context:</p>
+                    <p class="text-blue-700">${question.context}</p>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">Question ${currentQuestionIndex + 1}:</h3>
+                <p class="text-lg text-gray-700">${question.question}</p>
+            `;
+            
+            // Display options
+            answerOptions.innerHTML = question.options.map((option, index) => `
+                <button class="answer-option w-full text-left p-4 mb-3 border-2 border-gray-200 rounded-lg hover:border-indigo-300 hover:bg-indigo-50 transition-all duration-200" 
+                        data-index="${index}">
+                    <span class="font-medium text-indigo-600">${String.fromCharCode(65 + index)}.</span> 
+                    <span class="ml-2">${option.text}</span>
+                </button>
+            `).join('');
+            
+            // Reset state
+            selectedAnswer = null;
+            
+            // Add event listeners
+            document.querySelectorAll('.answer-option').forEach(button => {
+                button.addEventListener('click', selectAnswer);
+            });
+            
+            // Update navigation buttons
+            document.getElementById('prevBtn').disabled = currentQuestionIndex === 0;
+            document.getElementById('nextBtn').textContent = currentQuestionIndex === 29 ? 'Finish Quiz' : 'Next Question';
+            
+            // Re-render MathJax
+            if (window.MathJax) {
+                MathJax.typesetPromise([questionContent, answerOptions]).catch((err) => console.log(err.message));
+            }
+        }
+
+        function selectAnswer(event) {
+            const selectedIndex = parseInt(event.currentTarget.dataset.index);
+            selectedAnswer = selectedIndex;
+            
+            // Remove previous selections
+            document.querySelectorAll('.answer-option').forEach(button => {
+                button.classList.remove('border-indigo-500', 'bg-indigo-100');
+            });
+            
+            // Highlight selected answer
+            event.currentTarget.classList.add('border-indigo-500', 'bg-indigo-100');
+        }
+
+
+
+        function nextQuestion() {
+            if (selectedAnswer === null) {
+                alert('Please select an answer before proceeding.');
+                return;
+            }
+            
+            // Score the answer
+            const question = shuffledQuestions[currentQuestionIndex];
+            if (selectedAnswer === question.correct) {
+                score++;
+            }
+            
+            if (currentQuestionIndex < 29) {
+                currentQuestionIndex++;
+                displayQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function previousQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                displayQuestion();
+            }
+        }
+
+        function showResults() {
+            endTime = new Date();
+            const timeTaken = Math.round((endTime - startTime) / 1000 / 60); // minutes
+            
+            document.getElementById('quizContainer').classList.add('hidden');
+            document.getElementById('quizHeader').classList.add('hidden');
+            document.getElementById('resultsContainer').classList.remove('hidden');
+            
+            const percentage = Math.round((score / 30) * 100);
+            const incorrect = 30 - score;
+            
+            // Update all result fields
+            document.getElementById('finalStudentName').textContent = studentName;
+            document.getElementById('quizDate').textContent = new Date().toLocaleDateString();
+            document.getElementById('timeTaken').textContent = `${timeTaken} minutes`;
+            document.getElementById('finalScore').textContent = `${score}/30`;
+            document.getElementById('scorePercentage').textContent = `${percentage}%`;
+            document.getElementById('correctCount').textContent = score;
+            document.getElementById('incorrectCount').textContent = incorrect;
+            document.getElementById('accuracyRate').textContent = `${percentage}%`;
+            
+            let message = '';
+            let grade = '';
+            if (percentage >= 90) {
+                message = '🎉 Outstanding! You have excellent mastery of rational algebraic expressions!';
+                grade = 'A';
+            } else if (percentage >= 80) {
+                message = '👏 Great job! You have a strong understanding of the concepts.';
+                grade = 'B';
+            } else if (percentage >= 70) {
+                message = '👍 Good work! You understand most concepts but could benefit from more practice.';
+                grade = 'C';
+            } else if (percentage >= 60) {
+                message = '📚 Fair performance. Consider reviewing the fundamentals and practicing more problems.';
+                grade = 'D';
+            } else {
+                message = '💪 Keep practicing! Review the basic concepts and work through more examples.';
+                grade = 'F';
+            }
+            
+            document.getElementById('performanceMessage').innerHTML = `
+                <div class="text-center">
+                    <div class="text-3xl font-bold mb-2">Grade: ${grade}</div>
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+
+        function restartQuiz() {
+            // Reset all variables
+            currentQuestionIndex = 0;
+            score = 0;
+            selectedAnswer = null;
+            studentName = '';
+            startTime = null;
+            endTime = null;
+            shuffledQuestions = [];
+            
+            // Clear name input
+            document.getElementById('studentName').value = '';
+            
+            // Show name entry screen
+            document.getElementById('resultsContainer').classList.add('hidden');
+            document.getElementById('quizHeader').classList.add('hidden');
+            document.getElementById('quizContainer').classList.add('hidden');
+            document.getElementById('nameEntryContainer').classList.remove('hidden');
+            
+            // Check online status
+            checkOnlineStatus();
+        }
+
+        function printReport() {
+            window.print();
+        }
+
+        // Event listeners
+        document.getElementById('startQuizBtn').addEventListener('click', startQuiz);
+        document.getElementById('nextBtn').addEventListener('click', nextQuestion);
+        document.getElementById('prevBtn').addEventListener('click', previousQuestion);
+        document.getElementById('restartBtn').addEventListener('click', restartQuiz);
+        document.getElementById('printReportBtn').addEventListener('click', printReport);
+        
+        // Allow Enter key to start quiz
+        document.getElementById('studentName').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                startQuiz();
+            }
+        });
+
+        // Monitor online/offline status
+        window.addEventListener('online', checkOnlineStatus);
+        window.addEventListener('offline', checkOnlineStatus);
+
+        // Initialize
+        checkOnlineStatus();
+        setInterval(checkOnlineStatus, 3000);
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96e822c7444f5158',t:'MTc1NTA4NzMwNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
